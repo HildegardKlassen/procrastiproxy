@@ -3,43 +3,22 @@ package proxy
 import (
 	"net/http"
 	"net/url"
-	"sync"
 	"testing"
 )
 
-var testProxy *Proxy
-var once sync.Once
-
-func TestMain(m *testing.M) {
-	once.Do(
-		func() {
-			testProxy = NewProxy("localhost", "8000")
-			go func() {
-				testProxy.Run()
-			}()
-		})
-}
-
 func Test_Proxy(t *testing.T) {
 
-	req, err := http.NewRequest("GET", "https://www.google.de", nil)
-	if err != nil {
-		t.Error(err)
-	}
+	go func() { Run() }()
 
-	testUrl := url.URL{
-		Host:   req.URL.Host,
-		Path:   req.URL.Path,
-		Scheme: req.URL.Scheme,
-	}
+	pURL, _ := url.Parse("http://localhost:8000")
 
 	client := &http.Client{
 		Transport: &http.Transport{
-			Proxy: http.ProxyURL(&testUrl),
+			Proxy: http.ProxyURL(pURL),
 		},
 	}
 
-	res, err := client.Get("https://www.google.de")
+	res, err := client.Get("http://www.google.com")
 
 	if err != nil {
 		t.Error(err)
@@ -49,7 +28,5 @@ func Test_Proxy(t *testing.T) {
 	if res.StatusCode != 403 {
 		t.Error(err)
 	}
-
-	//body, err = ioutil.ReadAll(res.Body)
 
 }
