@@ -1,12 +1,17 @@
 package proxy
 
 import (
-	"io/ioutil"
+	_ "embed"
 	"net/http"
 	"net/http/httputil"
 	"strings"
 
 	"github.com/gorilla/mux"
+)
+
+var (
+	//go:embed blocklist
+	blockList string
 )
 
 func RunAllForbidden() {
@@ -68,10 +73,6 @@ func blockListRouter() *mux.Router {
 }
 
 func parseBlockList() []string {
-	content, err := ioutil.ReadFile("blocklist")
-	if err != nil {
-		return nil
-	}
-	lines := strings.Split(string(content), ",")
+	lines := strings.Split(string(blockList), ",")
 	return lines
 }
